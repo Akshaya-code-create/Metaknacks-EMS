@@ -198,7 +198,23 @@ function toLocalDateKey(value) {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
-function TrendGraph({ data }) { const max = Math.max(...data.map(item => item.value), 1); return <div className="flex h-36 items-end gap-3 border-b border-l border-[#dce8e2] px-3 pb-0 pt-4">{data.map(item => <div key={item.label} className="flex h-full flex-1 flex-col items-center justify-end gap-2"><span className="text-xs font-semibold text-[#1d6b5d]">{item.value}</span><div className="w-full max-w-12 rounded-t-md bg-[#2f8068]" style={{ height: `${Math.max(5, (item.value / max) * 100)}%` }} /><span className="text-[11px] text-[#64736f]">{item.label}</span></div>)}</div>; }
+function TrendGraph({ data }) {
+  const max = Math.max(...data.map(item => Number(item.value) || 0), 1);
+  const chartHeight = 96;
+  return <div className="grid h-44 grid-cols-7 gap-3 border-b border-l border-[#dce8e2] px-3 pb-2 pt-2">
+    {data.map(item => {
+      const value = Number(item.value) || 0;
+      const barHeight = Math.max(5, Math.round((value / max) * chartHeight));
+      return <div key={item.label} className="flex h-full min-w-0 flex-col items-center">
+        <span className="h-4 shrink-0 text-xs font-semibold text-[#1d6b5d]">{value}</span>
+        <div className="mt-1 flex h-24 w-full shrink-0 items-end justify-center">
+          <div title={`${value} enrollments`} className="w-full max-w-12 shrink-0 rounded-t-md bg-[#2f8068]" style={{ height: `${barHeight}px` }} />
+        </div>
+        <span className="mt-2 h-4 shrink-0 text-[11px] text-[#64736f]">{item.label}</span>
+      </div>;
+    })}
+  </div>;
+}
 function RegionalBarGraph({ data, metric }) { const max = Math.max(...data.map(item => Number(item[metric] || 0)), 1); return <div className="flex h-72 items-end gap-6 border-b border-l border-[#dce8e2] px-6 pb-0 pt-6">{data.map((item, index) => { const value = Number(item[metric] || 0); return <div key={item.name} className="flex h-full flex-1 flex-col items-center justify-end gap-2"><span className="text-sm font-bold text-[#173b35]">{value.toLocaleString()}</span><div className="w-full max-w-24 rounded-t-md bg-[#2f8068] transition-all" style={{ height: `${Math.max(4, value / max * 100)}%`, backgroundColor: ['#2f8068', '#d28b32', '#7b9b3a'][index] }} /><span className="text-sm font-semibold text-[#64736f]">{item.name}</span></div>; })}</div>; }
 function StatusPie({ approved, pending, rejected }) { const total = approved + pending + rejected; const approvedPct = total ? (approved / total) * 100 : 0; const pendingPct = total ? (pending / total) * 100 : 0; const rejectedPct = total ? (rejected / total) * 100 : 0; return <div className="flex items-center justify-center gap-5"><div className="h-32 w-32 rounded-full" style={{ background: total ? `conic-gradient(#2f7c57 0 ${approvedPct}%, #d28b32 ${approvedPct}% ${approvedPct + pendingPct}%, #c45d52 ${approvedPct + pendingPct}% ${approvedPct + pendingPct + rejectedPct}%)` : 'conic-gradient(#e2e8f0 0 100%)' }} aria-label="Enrollment status pie chart" role="img" /><div className="space-y-2 text-xs"><Legend color="#2f7c57" label="Approved" value={approved} /><Legend color="#d28b32" label="Pending" value={pending} /><Legend color="#c45d52" label="Rejected" value={rejected} /></div></div>; }
 function Legend({ color, label, value }) { return <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} /> <span>{label}</span><strong>{value}</strong></div>; }
