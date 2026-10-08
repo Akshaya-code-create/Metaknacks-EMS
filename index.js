@@ -73,6 +73,13 @@ const apiLimiter = rateLimit({
     message: { error: 'Too many requests. Please try again later.' }
 });
 app.use('/api', apiLimiter);
+const clientAccessLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 5,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { error: 'Too many passcode attempts. Please try again later.' }
+});
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { files: 2, fileSize: 200 * 1024 },
@@ -433,6 +440,26 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+app.post('/api/auth/client-access', clientAccessLimiter, async (req, res) => {
+    const passcode = typeof req.body.passcode === 'string' ? req.body.passcode : '';
+    const passcodeHash = String(process.env.CLIENT_VIEWER_PASSCODE_HASH || '').trim();
+    if (!passcodeHash) return res.status(503).json({ error: 'Client passcode access is not configured.' });
+
+    try {
+        if (!passcode || !await bcrypt.compare(passcode, passcodeHash)) {
+            return res.status(401).json({ error: 'Invalid passcode.' });
+        }
+        const token = jwt.sign(
+            { id: 'client-viewer', role: 'client_viewer', scope: 'leader:read' },
+            JWT_SECRET,
+            { expiresIn: '2h' }
+        );
+        res.json({ token, role: 'client_viewer', name: 'Client viewer' });
+    } catch {
+        res.status(500).json({ error: 'Unable to verify client access.' });
+    }
+});
+
 app.post('/api/admin/create-coordinator', authenticateToken, requireRoles('super_admin'), async (req, res) => {
     const { name, mobile_number, temp_password, assigned_region, assigned_constituency, assigned_mandal, agent_personal_email, personal_email, generated_login_email } = req.body;
     try {
@@ -648,7 +675,7 @@ app.get('/api/admin/voters', authenticateToken, requireRoles('super_admin', 'par
     }
 });
 
-app.get('/api/admin/summary', authenticateToken, requireRoles('super_admin', 'party_leader'), async (req, res) => {
+app.get('/api/admin/summary', authenticateToken, requireRoles('super_admin', 'party_leader', 'client_viewer'), async (req, res) => {
     const { region, constituency, status, mandal, search } = req.query;
     try {
         const filters = { region, constituency, mandal, status, search };
