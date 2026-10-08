@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { API } from '../utils/api';
+import { clearStoredAuthData } from './authSession.js';
 
 const AuthContext = createContext();
 
@@ -26,11 +27,11 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser({ token, role, name, assigned_region, assigned_constituency, assigned_mandal, id });
       } else {
-        localStorage.removeItem('token');
+        clearStoredAuthData();
         delete axios.defaults.headers.common['Authorization'];
       }
     } catch {
-      localStorage.removeItem('token');
+      clearStoredAuthData();
       delete axios.defaults.headers.common['Authorization'];
     }
     setLoading(false);
@@ -43,11 +44,12 @@ export const AuthProvider = ({ children }) => {
       try {
         const decoded = jwtDecode(token);
         if (!decoded?.exp || decoded.exp * 1000 <= Date.now()) {
-          ['token', 'role', 'name', 'assigned_constituency', 'assigned_region', 'assigned_mandal', 'id'].forEach(key => localStorage.removeItem(key));
+          clearStoredAuthData();
           delete axios.defaults.headers.common['Authorization'];
           setUser(null);
         }
       } catch {
+        clearStoredAuthData();
         delete axios.defaults.headers.common['Authorization'];
         setUser(null);
       }
@@ -105,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    ['token', 'role', 'name', 'assigned_constituency', 'assigned_region', 'assigned_mandal', 'id'].forEach(key => localStorage.removeItem(key));
+    clearStoredAuthData();
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };

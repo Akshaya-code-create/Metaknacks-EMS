@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LockKeyhole } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -27,6 +27,13 @@ const LeaderAccess = () => {
       setSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (!user) {
+      setPasscode('');
+      setError('');
+    }
+  }, [user]);
 
   if (loading) return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Loading...</div>;
   if (user && ['party_leader', 'client_viewer'].includes(user.role)) return <LeaderDashboard />;

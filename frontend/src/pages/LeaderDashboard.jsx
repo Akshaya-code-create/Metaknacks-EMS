@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { BarChart3, CheckCircle, Clock3, LayoutDashboard, LogOut, Map, Menu, RefreshCw, Search, Users, X, ArrowLeft } from 'lucide-react';
 import { API } from '../utils/api';
@@ -15,6 +16,7 @@ const normalizeGeographyName = (value) => {
 
 export default function LeaderDashboard() {
   const { user, logout } = useAuth();
+  const routerNavigate = useNavigate();
   const [regions, setRegions] = useState([]);
   const [constituencies, setConstituencies] = useState([]);
   const [mandals, setMandals] = useState([]);
@@ -162,7 +164,7 @@ export default function LeaderDashboard() {
   const sortedRegionalStats = [...regionalStats].sort((a, b) => Number(b[regionalMetric] || 0) - Number(a[regionalMetric] || 0));
 
   return <div className="min-h-screen bg-[#f3f7f5] text-[#173b35]">
-    <header className="sticky top-0 z-30 border-b border-[#e4ebe7] bg-white/95 px-4 py-2 shadow-[0_10px_30px_rgba(15,36,30,0.06)] backdrop-blur sm:px-8"><div className="flex w-full items-center justify-between gap-3"><div className="flex items-center gap-3"><button onClick={() => setSidebarOpen(true)} title="Open navigation" aria-label="Open navigation" className="rounded-md p-2 text-[#1d6b5d] lg:hidden"><Menu size={20} /></button><img src="/rakeshreddy.png" alt="EMS by Metaknacks" className="leader-logo" /><div className="flex flex-col"><div className="app-brand-wrap"><p className="app-brand-text app-brand-desktop">EMS BY METAKNACKS</p><p className="app-brand-text app-brand-mobile">EMS BY METAKNACKS</p></div><h1 className="dashboard-page-title">LEADER VIEW</h1></div></div><div className="flex items-center gap-3"><span className="hidden text-sm font-semibold text-[#3a4f49] sm:inline">{user?.name || 'Party Leader'}</span><button onClick={logout} title="Sign out" aria-label="Sign out" className="rounded-md p-2 text-[#64736f] transition hover:bg-[#eef6f2] hover:text-[#173b35]"><LogOut size={18} /></button></div></div></header>
+    <header className="sticky top-0 z-30 border-b border-[#e4ebe7] bg-white/95 px-4 py-2 shadow-[0_10px_30px_rgba(15,36,30,0.06)] backdrop-blur sm:px-8"><div className="flex w-full items-center justify-between gap-3"><div className="flex items-center gap-3"><button onClick={() => setSidebarOpen(true)} title="Open navigation" aria-label="Open navigation" className="rounded-md p-2 text-[#1d6b5d] lg:hidden"><Menu size={20} /></button><img src="/rakeshreddy.png" alt="EMS by Metaknacks" className="leader-logo" /><div className="flex flex-col"><div className="app-brand-wrap"><p className="app-brand-text app-brand-desktop">EMS BY METAKNACKS</p><p className="app-brand-text app-brand-mobile">EMS BY METAKNACKS</p></div><h1 className="dashboard-page-title">LEADER VIEW</h1></div></div><div className="flex items-center gap-3"><span className="hidden text-sm font-semibold text-[#3a4f49] sm:inline">{user?.name || 'Party Leader'}</span><button onClick={() => { logout(); routerNavigate('/leader', { replace: true }); }} title="Sign out" aria-label="Sign out" className="rounded-md p-2 text-[#64736f] transition hover:bg-[#eef6f2] hover:text-[#173b35]"><LogOut size={18} /></button></div></div></header>
     <div className="flex w-full">
       <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-40 mt-[65px] w-72 border-r border-[#dce8e2] bg-[#173b35] p-4 text-white transition-transform lg:sticky lg:top-[65px] lg:mt-0 lg:h-[calc(100vh-65px)] lg:w-64 lg:translate-x-0`}>
         <div className="mb-5 flex items-center justify-between lg:hidden">
