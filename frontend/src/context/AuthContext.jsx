@@ -86,26 +86,6 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  const loginWithClientPasscode = async (passcode) => {
-    const response = await axios.post(`${API}/auth/client-access`, { passcode });
-    const { token, role, name } = response.data;
-    if (role !== 'client_viewer') throw new Error('Invalid client access response.');
-
-    const decoded = jwtDecode(token);
-    const id = decoded.id;
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', role);
-    localStorage.setItem('name', name || 'Client viewer');
-    localStorage.setItem('assigned_constituency', '');
-    localStorage.setItem('assigned_region', '');
-    localStorage.setItem('assigned_mandal', '');
-    localStorage.setItem('id', id);
-
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser({ token, role, name: name || 'Client viewer', assigned_region: '', assigned_constituency: '', assigned_mandal: '', id });
-    return response.data;
-  };
-
   const logout = () => {
     clearStoredAuthData();
     delete axios.defaults.headers.common['Authorization'];
@@ -113,7 +93,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, loginWithClientPasscode, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
