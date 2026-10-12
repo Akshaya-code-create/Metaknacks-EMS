@@ -7,27 +7,37 @@ A real-time graduate MLC election enrollment and management platform.
 2. **Super Admin Dashboard**: A high-level control panel to manage the entire campaign, provision coordinators, and review enrollments.
 
 ## Prerequisites
-- Node.js (v16+)
-- PostgreSQL (`mlc_voter_db` must be configured, with credentials set in `index.js`)
+- Node.js (v20.19+ or v22.12+)
+- PostgreSQL (`mlc_voter_db` must be configured through environment variables)
+
+## Project Structure
+- `frontend/` — React/Vite user interface
+- `backend/` — Express API
+- `database/scripts/` — database inspection and maintenance scripts
+- `scripts/` — administrative and utility scripts
+- `docs/` — project documentation
 
 ## Running the Backend
 
 The backend is built with Node.js and Express, connecting to a PostgreSQL database.
 
-For production, set `NODE_ENV=production`, a random `JWT_SECRET` of at least 32 characters, and use the Supabase Session Pooler connection string on port `6543` with `pgbouncer=true`. The backend refuses a direct Supabase database URI in production.
+For Supabase, copy the **Transaction pooler** URI from **Dashboard → Connect** into `DATABASE_URL`. It must use port `6543` and `pgbouncer=true`; URL-encode special characters in the database password. Keep `.env` private and use the database password, not a Supabase API key. In production also set `NODE_ENV=production` and a random `JWT_SECRET` of at least 32 characters.
+
+There is no ORM or standalone migration directory. On startup, the backend applies additive column/index setup to existing `users` and `voters` tables. It does not create the initial application tables; provision the existing schema before starting the API. This startup setup does not drop columns.
 
 1. Open a terminal.
 2. Navigate to the project root:
    ```bash
-   cd c:/Users/HP/Desktop/mlc-voter-app
+   cd /path/to/Kingmayker-EMS
    ```
-3. Install backend dependencies (if not already installed):
+3. Install backend dependencies from the project root:
    ```bash
-   npm install
+   npm ci
    ```
-4. Start the backend server:
+4. Copy `.env.example` to `.env` in the project root and configure `DATABASE_URL` and a `JWT_SECRET` of at least 32 characters.
+5. Start the backend server from either the project root or `backend`:
    ```bash
-   node index.js
+   npm start
    ```
    The backend will run on `http://localhost:5000`.
 
@@ -56,11 +66,11 @@ The frontend is built with React, Vite, and Tailwind CSS.
 1. Open a new terminal.
 2. Navigate to the `frontend` directory:
    ```bash
-   cd c:/Users/HP/Desktop/mlc-voter-app/frontend
+   cd /path/to/Kingmayker-EMS/frontend
    ```
-3. Install frontend dependencies (if not already installed):
+3. Install frontend dependencies:
    ```bash
-   npm install
+   npm ci
    ```
 4. Start the frontend development server:
    ```bash
@@ -78,7 +88,7 @@ The read-only party leader account is routed to `/leader` after login. The dashb
 
 To test locally:
 
-1. Start PostgreSQL and the backend with `node index.js` from the project root.
+1. Start PostgreSQL and the backend with `npm start` from the project root.
 2. Start the frontend with `npm run dev` from `frontend`.
 3. Sign in with the provisioned `party_leader` account, for example `leader@kingmayker.com` and its current password.
 4. Apply constituency, mandal, village, or status filters, then select **Export Excel**.

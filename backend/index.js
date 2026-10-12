@@ -7,7 +7,7 @@ const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const crypto = require('crypto');
 const multer = require('multer');
 const sharp = require('sharp');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
 
 const app = express();
 app.set('trust proxy', 1);
@@ -145,16 +145,6 @@ async function ensureVoterColumns() {
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS agent_personal_email VARCHAR(255)');
     await pool.query('ALTER TABLE users ALTER COLUMN email DROP NOT NULL');
     await pool.query('ALTER TABLE voters ALTER COLUMN email DROP NOT NULL');
-    await pool.query(`
-        ALTER TABLE voters
-        DROP COLUMN IF EXISTS whatsapp_number,
-        DROP COLUMN IF EXISTS booth_number,
-        DROP COLUMN IF EXISTS form18_number,
-        DROP COLUMN IF EXISTS reference_number,
-        DROP COLUMN IF EXISTS house_number,
-        DROP COLUMN IF EXISTS street,
-        DROP COLUMN IF EXISTS ward
-    `);
     const indexStatements = [
         'CREATE INDEX IF NOT EXISTS voters_voter_id_idx ON voters (voter_id)',
         'CREATE INDEX IF NOT EXISTS voters_coordinator_id_idx ON voters (coordinator_id)',
